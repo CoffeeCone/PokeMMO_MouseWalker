@@ -183,9 +183,20 @@ $dll = DllOpen("user32.dll")
 ; Main loop for detecting mouse button clicks.
 While 1
 
-	; If PokeMMO window doesn't exist anymore (a.k.a. closed), exit the program too.
-	If Not WinExists("[CLASS:LWJGL; TITLE:PokeMMO]") Then
-		ExitLoop
+	If $settings[2] = "true" Then
+
+		; If PokeMMO process doesn't exist anymore (a.k.a. closed), exit the program too.
+		If Not ProcessExists($client) Then
+			ExitLoop
+		EndIf
+
+	Else
+
+		; If PokeMMO window doesn't exist anymore (a.k.a. closed), exit the program too.
+		If Not WinExists("[CLASS:LWJGL; TITLE:PokeMMO]") Then
+			ExitLoop
+		EndIf
+
 	EndIf
 
 	; Pause for 250 milliseconds to give the processor some timee to breathe.
