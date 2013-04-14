@@ -13,7 +13,18 @@ PokeMMO MouseWalker v1.1
 
 1. CHANGELOG
 ------------
-- Total overhaul because I was dissatisfied with v1.0. :P
++ Added update checking.
++ Added option to disabled update checking.
++ Added version to INI file.
++ Added “Launcher Mode” (see README).
++ Added confirmation message (see README).
++ Added confirmation message toggle.
++ Added minimum allotted memory (see README).
++ Added maximum allotted memory (see README).
++ Added center point offset (see README).
++ Added comments to source code so you know what is what.
+* Changed launch mode from depending on the EXE to actually using Java directly.
+* Changed window checking to be a lot more accurate than before.
 
 
 2. BASIC USAGE (WITH DEFAULT INI FILE)
