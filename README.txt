@@ -1,5 +1,5 @@
 ------------------------
-PokeMMO MouseWalker v1.1
+PokeMMO MouseWalker v1.3
 ------------------------
 
 
@@ -13,18 +13,7 @@ PokeMMO MouseWalker v1.1
 
 1. CHANGELOG
 ------------
-+ Added update checking.
-+ Added option to disabled update checking.
-+ Added version to INI file.
-+ Added “Launcher Mode” (see README).
-+ Added confirmation message (see README).
-+ Added confirmation message toggle.
-+ Added minimum allotted memory (see README).
-+ Added maximum allotted memory (see README).
-+ Added center point offset (see README).
-+ Added comments to source code so you know what is what.
-* Changed launch mode from depending on the EXE to actually using Java directly.
-* Changed window checking to be a lot more accurate than before.
+See http://coffeecone.com/mousewalker for the latest changelog.
 
 
 2. BASIC USAGE (WITH DEFAULT INI FILE)
@@ -72,10 +61,15 @@ or down. I advise you not change this but you're
 free to experiment though. See what value suits
 you.
 
+ENABLE_AB - If set to true, the key A and key B
+bindings to the left and right mouse clicks will
+be enabled. If set to false, it will not be
+bound to left and right mouse clicks.
+
 
 4. BUG REPORTS
 --------------
-Report bugs to me via PM on the forums.
+Report bugs to me via me@shedosurashu.com mail.
 
 
 5. ABOUT

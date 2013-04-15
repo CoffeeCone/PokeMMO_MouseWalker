@@ -5,7 +5,7 @@
  Website:        http://coffeecone.com/mousewalker
 
  Name: PokeMMO MouseWalker
- Version: 1.1
+ Version: 1.3
  Description:
 	Allows character movement by holing down the middle mouse button and moving
 	the mouse to the desired location.
@@ -17,13 +17,14 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_Res_Comment=MouseWalker is a tool for PokeMMO that implements mouse-based walking using the middle mouse button.
 #AutoIt3Wrapper_Res_Description=CoffeeCone.com
-#AutoIt3Wrapper_Res_Fileversion=1.1
+#AutoIt3Wrapper_Res_Fileversion=1.3
 #AutoIt3Wrapper_Res_LegalCopyright=CoffeeCone.com
 #EndRegion
 #NoTrayIcon
 
-#include <Misc.au3>
 #include <WinHttp.au3>
+#include <WinAPI.au3>
+#include <WindowsConstants.au3>
 
 ; Check if configuration file is present.
 ; If not, show error.
@@ -32,11 +33,12 @@ If Not FileExists("mousewalker.ini") Then
 	Exit
 EndIf
 
-; Declare arrays and variable which will be used later.
-Dim $keymap[4]
+; Declare variables which will be used later.
+Dim $keymap[6]
 Dim $keyup[4]
-Dim $settings[7]
+Dim $settings[8]
 Dim $client
+Dim $mdown = False
 
 ; Read configuration file for settings.
 $ini = IniReadSection("mousewalker.ini", "Settings")
@@ -65,6 +67,8 @@ Else
 				$settings[5] = $ini[$i][1]
 			Case "OFFSET"
 				$settings[6] = $ini[$i][1]
+			Case "ENABLE_AB"
+				$settings[7] = $ini[$i][1]
 		EndSwitch
     Next
 
@@ -121,6 +125,10 @@ Else
 				$keymap[2] = $ini[$i][1]
 			Case "KEY_RIGHT"
 				$keymap[3] = $ini[$i][1]
+			Case "KEY_A"
+				$keymap[4] = $ini[$i][1]
+			Case "KEY_B"
+				$keymap[5] = $ini[$i][1]
 		EndSwitch
     Next
 
@@ -137,6 +145,8 @@ $keymap[0] = "{" & $keymap[0] & " down}"
 $keymap[1] = "{" & $keymap[1] & " down}"
 $keymap[2] = "{" & $keymap[2] & " down}"
 $keymap[3] = "{" & $keymap[3] & " down}"
+$keymap[4] = "{" & $keymap[4] & " 1}"
+$keymap[5] = "{" & $keymap[5] & " 1}"
 
 ; Check if launcher mode is enabled.
 If $settings[2] = "true" Then
@@ -177,30 +187,30 @@ Else
 
 EndIf
 
-; Open user32.dll to hook to mouse button detection.
-$dll = DllOpen("user32.dll")
+; Mouse hooking.
+OnAutoItExitRegister('OnAppExit')
+Global Const $HC_ACTION = 0
+Global $hStub_MouseProc = DllCallbackRegister("_MouseProc", "long", "int;wparam;lparam")
+Global $hmod = _WinAPI_GetModuleHandle(0)
+Global $hHook = _WinAPI_SetWindowsHookEx($WH_MOUSE_LL, DllCallbackGetPtr($hStub_MouseProc), $hmod)
 
-; Main loop for detecting mouse button clicks.
-While 1
+While True
 
 	If $settings[2] = "true" Then
 
 		; If PokeMMO process doesn't exist anymore (a.k.a. closed), exit the program too.
 		If Not ProcessExists($client) Then
-			ExitLoop
+			Exit
 		EndIf
 
 	Else
 
 		; If PokeMMO window doesn't exist anymore (a.k.a. closed), exit the program too.
 		If Not WinExists("[CLASS:LWJGL; TITLE:PokeMMO]") Then
-			ExitLoop
+			Exit
 		EndIf
 
 	EndIf
-
-	; Pause for 250 milliseconds to give the processor some timee to breathe.
-	Sleep(250)
 
 	; Check if PokeMMO is the active window.
 	; This is done so that the key binding will not work outside the game and will not interfere with other programs.
@@ -214,7 +224,7 @@ While 1
 		$window[0] = $window[0]/2
 		$window[1] = $window[1]/2
 
-		If _IsPressed("04", $dll) Then
+		If $mdown Then
 			Send($keyup[0])
 			Send($keyup[1])
 			Send($keyup[2])
@@ -241,9 +251,31 @@ While 1
 		EndIf
 	EndIf
 
+    Sleep(100)
 WEnd
 
-; Release user32.dll.
-DllClose($dll)
+Func _MouseProc($nCode, $wParam, $lParam)
+    If $nCode < 0 Then Return _WinAPI_CallNextHookEx($hHook, $nCode, $wParam, $lParam)
+    If $nCode = $HC_ACTION Then
+        Switch $wParam
+            Case $WM_MBUTTONDOWN
+                $mdown = True
+            Case $WM_MBUTTONUP
+				$mdown = False
+            Case $WM_LBUTTONUP
+				If $settings[7] = "true" Then
+					Send($keymap[4])
+				EndIf
+            Case $WM_RBUTTONUP
+				If $settings[7] = "true" Then
+					Send($keymap[5])
+				EndIf
+        EndSwitch
+    EndIf
+    Return _WinAPI_CallNextHookEx($hHook, $nCode, $wParam, $lParam)
+EndFunc
 
-Exit
+Func OnAppExit()
+    _WinAPI_UnhookWindowsHookEx($hHook)
+    DllCallbackFree($hStub_MouseProc)
+EndFunc
